@@ -1,0 +1,19 @@
+# Entornos y cache de Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Artefactos generados por el pipeline
+data/
+models/
+runs/
+outputs/
+*.db
+
+# Pesos de modelos descargados/entrenados
+*.pt
+
+# Sistema
+.DS_Store
