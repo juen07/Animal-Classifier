@@ -12,6 +12,7 @@ Ultralytics necesita para el entrenamiento.
 
 from __future__ import annotations
 
+import logging
 import random
 import shutil
 from pathlib import Path
@@ -20,6 +21,8 @@ import yaml
 from PIL import Image, ImageChops
 
 from . import config
+
+logger = logging.getLogger(__name__)
 
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
@@ -168,8 +171,10 @@ def build_dataset(
     """Construye el dataset YOLO completo a partir de las imagenes crudas."""
     random.seed(cfg.seed)
 
+    logger.info("Construccion de dataset iniciada (raw=%s)", raw_dir)
     species_images = _iter_species_images(raw_dir)
     if not species_images:
+        logger.error("No se encontraron imagenes en %s para construir el dataset", raw_dir)
         raise RuntimeError(
             f"No se encontraron imagenes en {raw_dir}. Ejecuta primero el scraper "
             "o genera datos de ejemplo con 'sample'."
@@ -183,9 +188,16 @@ def build_dataset(
 
             model = YOLO(config.BASE_MODEL)
             print(f"[dataset] Auto-etiquetado con modelo base '{config.BASE_MODEL}'.")
+            logger.info("Auto-etiquetado habilitado con modelo base '%s'", config.BASE_MODEL)
         except Exception as exc:  # noqa: BLE001
             print(f"[dataset] No se pudo cargar el modelo base ({exc}). "
                   "Se usara etiquetado debil (imagen completa).")
+            logger.warning(
+                "No se pudo cargar el modelo base para auto-etiquetado (%s); "
+                "se usara etiquetado debil", exc,
+            )
+    else:
+        logger.info("Auto-etiquetado deshabilitado; se usara etiquetado por contenido")
 
     # Limpiar dataset previo.
     for sub in ("images", "labels"):
@@ -224,5 +236,9 @@ def build_dataset(
     print(
         f"[dataset] Dataset listo: {summary['train']} train / {summary['val']} val, "
         f"{summary['classes']} clases -> {yaml_path}"
+    )
+    logger.info(
+        "Dataset construido: %d train / %d val, %d clases -> %s",
+        summary["train"], summary["val"], summary["classes"], yaml_path,
     )
     return summary

@@ -7,12 +7,15 @@ necesidad de servidores externos.
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
 from . import config
 from .vet_data import VET_RECORDS
+
+logger = logging.getLogger(__name__)
 
 # Mensaje obligatorio de la regla estricta.
 NO_RECORD_MESSAGE = "No hay registro de toxicidad hacia caninos"
@@ -63,6 +66,7 @@ def init_db(db_path: Path | str = config.DB_PATH, *, seed: bool = True) -> None:
             """
         )
         conn.commit()
+        logger.info('Base de datos veterinaria inicializada en "%s"', Path(db_path))
         if seed:
             _seed(conn)
 
@@ -86,6 +90,7 @@ def _seed(conn: sqlite3.Connection) -> None:
         VET_RECORDS,
     )
     conn.commit()
+    logger.info("Datos veterinarios semilla cargados (%d registros)", len(VET_RECORDS))
 
 
 def get_record(
@@ -129,6 +134,18 @@ def describe_toxicity(species_key: str, db_path: Path | str = config.DB_PATH) ->
             else (catalog.common_name if catalog else species_key)
         )
         risk = record.risk_level if record and record.risk_level else "DESCONOCIDO"
+        if record is None:
+            logger.warning(
+                'Especie "%s" sin registro en la base de datos -> regla estricta: "%s"',
+                species_key,
+                NO_RECORD_MESSAGE,
+            )
+        else:
+            logger.warning(
+                'Especie "%s" con campo de danos vacio -> regla estricta: "%s"',
+                species_key,
+                NO_RECORD_MESSAGE,
+            )
         return {
             "species_key": species_key,
             "common_name": common,

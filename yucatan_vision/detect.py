@@ -8,12 +8,15 @@ y exporta la imagen anotada.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 from . import config, database
+
+logger = logging.getLogger(__name__)
 
 # Colores (RGB) por nivel de riesgo para el dibujo de cuadros.
 RISK_COLORS: dict[str, tuple[int, int, int]] = {
@@ -64,7 +67,12 @@ def _load_model(model_path: Path | str | None):
             f"[detect] Aviso: no se encontro '{model_path}'. Usando modelo base "
             f"'{config.BASE_MODEL}' (las clases no seran las de Yucatan)."
         )
+        logger.warning(
+            "No se encontro el modelo entrenado '%s'; usando modelo base '%s'",
+            model_path, config.BASE_MODEL,
+        )
         return YOLO(config.BASE_MODEL), False
+    logger.info("Modelo de inferencia cargado desde '%s'", model_path)
     return YOLO(str(model_path)), True
 
 
@@ -95,8 +103,10 @@ def analyze_image(
     """Analiza una imagen y devuelve la lista de detecciones enriquecidas."""
     image_path = Path(image_path)
     if not image_path.exists():
+        logger.error('No existe la imagen solicitada: "%s"', image_path)
         raise FileNotFoundError(f"No existe la imagen: {image_path}")
 
+    logger.info('Analisis de imagen iniciado: "%s"', image_path)
     model, custom = _load_model(model_path)
 
     # Pasada final (detecciones de alta confianza). Se usa NMS agnostico a la
@@ -127,6 +137,7 @@ def analyze_image(
 
     detections: list[Detection] = []
     if final.boxes is None or len(final.boxes) == 0:
+        logger.warning('No se detectaron animales en "%s"', image_path)
         return detections
 
     for box in final.boxes:
@@ -152,7 +163,15 @@ def analyze_image(
         detections.append(
             Detection(bbox=xyxy, top1_key=top1, top1_conf=conf, topk=topk, vet=vet)
         )
+        logger.info(
+            'Deteccion: %s (%.1f%%) | riesgo=%s | bbox=(%.0f,%.0f,%.0f,%.0f)',
+            top1, conf * 100, vet.get("risk_level", "?"), *xyxy,
+        )
 
+    logger.info(
+        'Analisis completado: %d animal(es) detectado(s) en "%s"',
+        len(detections), image_path,
+    )
     return detections
 
 
@@ -237,6 +256,7 @@ def draw_detections(
 
     img.save(out_path)
     print(f"[detect] Imagen anotada exportada en {out_path}")
+    logger.info('Imagen anotada exportada en "%s"', out_path)
     return out_path
 
 

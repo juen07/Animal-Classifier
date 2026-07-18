@@ -7,6 +7,7 @@ que no sean imagenes reales.
 
 from __future__ import annotations
 
+import logging
 import shutil
 from pathlib import Path
 
@@ -14,6 +15,8 @@ from PIL import Image, UnidentifiedImageError
 
 from . import config
 from .config import Species
+
+logger = logging.getLogger(__name__)
 
 VALID_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
@@ -90,9 +93,10 @@ def validate_and_purge(directory: Path, min_side: int) -> tuple[int, int]:
                 # Normaliza a RGB para descartar modos raros / corruptos.
                 img.convert("RGB")
             valid += 1
-        except (UnidentifiedImageError, OSError, ValueError, SyntaxError):
+        except (UnidentifiedImageError, OSError, ValueError, SyntaxError) as exc:
             path.unlink(missing_ok=True)
             purged += 1
+            logger.debug('Purgada imagen invalida "%s": %s', path.name, exc)
 
     return (valid, purged)
 
@@ -110,8 +114,17 @@ def scrape_dataset(
     raw_dir.mkdir(parents=True, exist_ok=True)
     summary: dict[str, int] = {}
 
+    logger.info(
+        "Inicio de web scraping: %d especies, %d imagenes objetivo por especie",
+        len(species_list),
+        cfg.images_per_species,
+    )
+
     for species in species_list:
         print(f"[scraper] Descargando '{species.common_name}' ({species.query}) ...")
+        logger.info(
+            'Descargando especie "%s" (query="%s")', species.key, species.query
+        )
         try:
             target = _download_species(
                 species,
@@ -122,13 +135,23 @@ def scrape_dataset(
             )
         except Exception as exc:  # noqa: BLE001 - la red puede fallar
             print(f"[scraper]   ! Error al descargar {species.key}: {exc}")
+            logger.error('Fallo la descarga de "%s": %s', species.key, exc)
             summary[species.key] = 0
             continue
 
         valid, purged = validate_and_purge(target, cfg.min_image_side)
         print(f"[scraper]   -> {valid} validas, {purged} purgadas")
+        logger.info(
+            'Especie "%s": %d imagenes validas, %d purgadas (corruptas/invalidas)',
+            species.key,
+            valid,
+            purged,
+        )
+        if valid == 0:
+            logger.warning('La especie "%s" no obtuvo imagenes validas', species.key)
         summary[species.key] = valid
 
     total = sum(summary.values())
     print(f"[scraper] Total de imagenes validas: {total}")
+    logger.info("Web scraping finalizado: %d imagenes validas en total", total)
     return summary
