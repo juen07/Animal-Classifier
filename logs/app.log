@@ -1,0 +1,60 @@
+2026-07-18 16:38:15 — [INFO] Bitacora de auditoria inicializada -> "/workspace/logs/app.log"
+2026-07-18 16:38:15 — [INFO] Ejecutando comando 'pipeline'
+2026-07-18 16:38:17 — [INFO] Base de datos veterinaria inicializada en "/workspace/data/veterinaria.db"
+2026-07-18 16:38:17 — [INFO] Datos veterinarios semilla cargados (9 registros)
+2026-07-18 16:38:17 — [INFO] Generadas 180 imagenes sinteticas (18 por especie) en '/workspace/data/raw'
+2026-07-18 16:38:17 — [INFO] Construccion de dataset iniciada (raw=/workspace/data/raw)
+2026-07-18 16:38:18 — [INFO] Auto-etiquetado habilitado con modelo base 'yolov8n.pt'
+2026-07-18 16:38:28 — [INFO] Dataset construido: 150 train / 30 val, 10 clases -> /workspace/data/dataset/yucatan.yaml
+2026-07-18 16:38:28 — [INFO] Inicio de fine-tuning: modelo base='yolov8n.pt', device=cpu, epochs=20, imgsz=320, batch=16
+2026-07-18 16:40:13 — [INFO] Fine-tuning finalizado. Mejor modelo copiado a '/workspace/models/yucatan_best.pt'
+2026-07-18 16:40:13 — [INFO] Escena multiobjeto (4 especies) guardada en '/workspace/outputs/escena_demo.jpg'
+2026-07-18 16:40:13 — [INFO] Analisis de imagen iniciado: "/workspace/outputs/escena_demo.jpg"
+2026-07-18 16:40:13 — [INFO] Modelo de inferencia cargado desde '/workspace/models/yucatan_best.pt'
+2026-07-18 16:40:13 — [INFO] Deteccion: coralillo (98.9%) | riesgo=ALTO | bbox=(66,404,269,586)
+2026-07-18 16:40:13 — [INFO] Deteccion: sapo_gigante (97.1%) | riesgo=ALTO | bbox=(76,101,269,269)
+2026-07-18 16:40:13 — [INFO] Deteccion: nauyaca (92.8%) | riesgo=ALTO | bbox=(399,54,586,271)
+2026-07-18 16:40:13 — [INFO] Deteccion: alacran (67.3%) | riesgo=MEDIO | bbox=(401,397,588,592)
+2026-07-18 16:40:13 — [INFO] Analisis completado: 4 animal(es) detectado(s) en "/workspace/outputs/escena_demo.jpg"
+2026-07-18 16:40:13 — [INFO] Imagen anotada exportada en "/workspace/outputs/escena_demo_analizado.jpg"
+2026-07-18 16:40:13 — [INFO] Comando 'pipeline' finalizado correctamente
+2026-07-18 16:40:20 — [INFO] Bitacora de auditoria inicializada -> "/workspace/logs/app.log"
+2026-07-18 16:40:20 — [INFO] Ejecutando comando 'detect'
+2026-07-18 16:40:20 — [INFO] Base de datos veterinaria inicializada en "/workspace/data/veterinaria.db"
+2026-07-18 16:40:20 — [INFO] Datos veterinarios semilla cargados (9 registros)
+2026-07-18 16:40:20 — [INFO] Analisis de imagen iniciado: "outputs/escena_regla.jpg"
+2026-07-18 16:40:21 — [INFO] Modelo de inferencia cargado desde '/workspace/models/yucatan_best.pt'
+2026-07-18 16:40:22 — [INFO] Deteccion: sapo_gigante (98.1%) | riesgo=ALTO | bbox=(74,412,268,590)
+2026-07-18 16:40:22 — [WARNING] Especie "coati" con campo de danos vacio -> regla estricta: "No hay registro de toxicidad hacia caninos"
+2026-07-18 16:40:22 — [INFO] Deteccion: coati (96.6%) | riesgo=DESCONOCIDO | bbox=(64,91,265,271)
+2026-07-18 16:40:22 — [WARNING] Especie "pavo_ocelado" sin registro en la base de datos -> regla estricta: "No hay registro de toxicidad hacia caninos"
+2026-07-18 16:40:22 — [INFO] Deteccion: pavo_ocelado (96.4%) | riesgo=DESCONOCIDO | bbox=(406,61,592,271)
+2026-07-18 16:40:22 — [INFO] Deteccion: boa (96.1%) | riesgo=BAJO | bbox=(401,415,587,588)
+2026-07-18 16:40:22 — [INFO] Analisis completado: 4 animal(es) detectado(s) en "outputs/escena_regla.jpg"
+2026-07-18 16:40:22 — [INFO] Imagen anotada exportada en "/workspace/outputs/escena_regla_analizado.jpg"
+2026-07-18 16:40:22 — [INFO] Comando 'detect' finalizado correctamente
+2026-07-18 16:40:22 — [INFO] Bitacora de auditoria inicializada -> "/workspace/logs/app.log"
+2026-07-18 16:40:22 — [INFO] Ejecutando comando 'detect'
+2026-07-18 16:40:22 — [INFO] Base de datos veterinaria inicializada en "/workspace/data/veterinaria.db"
+2026-07-18 16:40:22 — [INFO] Datos veterinarios semilla cargados (9 registros)
+2026-07-18 16:40:22 — [ERROR] No existe la imagen solicitada: "outputs/no_existe.jpg"
+2026-07-18 16:40:22 — [ERROR] El comando 'detect' fallo: No existe la imagen: outputs/no_existe.jpg
+Traceback (most recent call last):
+  File "/workspace/yucatan_vision/cli.py", line 238, in main
+    args.func(args)
+  File "/workspace/yucatan_vision/cli.py", line 107, in cmd_detect
+    detect.run(
+  File "/workspace/yucatan_vision/detect.py", line 270, in run
+    detections = analyze_image(image_path, cfg=cfg, model_path=model_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/yucatan_vision/detect.py", line 107, in analyze_image
+    raise FileNotFoundError(f"No existe la imagen: {image_path}")
+FileNotFoundError: No existe la imagen: outputs/no_existe.jpg
+2026-07-18 16:40:22 — [INFO] Comando 'detect' finalizado con errores
+2026-07-18 16:40:27 — [INFO] Bitacora de auditoria inicializada -> "/workspace/logs/app.log"
+2026-07-18 16:40:27 — [INFO] Ejecutando comando 'info'
+2026-07-18 16:40:27 — [INFO] Base de datos veterinaria inicializada en "/workspace/data/veterinaria.db"
+2026-07-18 16:40:27 — [INFO] Datos veterinarios semilla cargados (9 registros)
+2026-07-18 16:40:27 — [WARNING] Especie "pavo_ocelado" sin registro en la base de datos -> regla estricta: "No hay registro de toxicidad hacia caninos"
+2026-07-18 16:40:27 — [WARNING] Especie "coati" con campo de danos vacio -> regla estricta: "No hay registro de toxicidad hacia caninos"
+2026-07-18 16:40:27 — [INFO] Comando 'info' finalizado correctamente
