@@ -167,20 +167,48 @@ uv run python main.py detect ruta/a/mi_imagen.jpg
 
 ```
 yucatan_vision/
-├── config.py         # Catálogo de especies, rutas e hiperparámetros
-├── vet_data.py       # Datos veterinarios semilla
-├── database.py       # Capa SQLite + regla estricta de toxicidad
-├── scraper.py        # Web scraping + curación con Pillow
-├── sample_images.py  # Generador de imágenes sintéticas (demo offline)
-├── dataset.py        # Auto-etiquetado + dataset YOLO + YAML
-├── train.py          # Fine-tuning del detector YOLO
-├── detect.py         # Inferencia multiobjeto, Top-3, DB e imagen anotada
-└── cli.py            # Interfaz de línea de comandos
-main.py               # Punto de entrada
+├── config.py          # Catálogo de especies, rutas e hiperparámetros
+├── vet_data.py        # Datos veterinarios semilla
+├── database.py        # Capa SQLite + regla estricta de toxicidad
+├── scraper.py         # Web scraping + curación con Pillow
+├── sample_images.py   # Generador de imágenes sintéticas (demo offline)
+├── dataset.py         # Auto-etiquetado + dataset YOLO + YAML
+├── train.py           # Fine-tuning del detector YOLO
+├── detect.py          # Inferencia multiobjeto, Top-3, DB e imagen anotada
+├── logging_config.py  # Configuración de la bitácora de auditoría
+└── cli.py             # Interfaz de línea de comandos
+main.py                # Punto de entrada
+logs/                  # Bitácoras de auditoría generadas automáticamente
 ```
 
 Artefactos generados (ignorados por git): `data/`, `models/`, `runs/`,
 `outputs/`.
+
+---
+
+## Bitácora de auditoría (logs)
+
+El sistema registra automáticamente su actividad con el módulo estándar
+`logging` en la carpeta [`logs/`](logs/) (por defecto `logs/app.log`). Cada
+comando inicializa la bitácora y registra:
+
+- **INFO** — eventos clave: inicio/fin de comandos, inicialización de la base
+  de datos, generación de imágenes, construcción del dataset, entrenamiento,
+  cada detección (especie, confianza, riesgo, bbox) y exportación de imágenes.
+- **WARNING** — situaciones a vigilar: aplicación de la regla estricta,
+  imágenes sin resultados, uso del modelo base como respaldo.
+- **ERROR** — fallos: imagen inexistente, fallo de descarga, comando abortado
+  (con traza completa).
+
+Formato de cada entrada:
+
+```
+2026-07-18 16:40:22 — [WARNING] Especie "coati" con campo de danos vacio — regla estricta: "No hay registro de toxicidad hacia caninos"
+2026-07-18 16:40:22 — [ERROR] No existe la imagen solicitada: "outputs/no_existe.jpg"
+```
+
+Opciones (en `logging_config.setup_logging`): `daily=True` genera un archivo por
+día (`logs/YYYY-MM-DD.log`) en lugar de `logs/app.log`.
 
 ---
 

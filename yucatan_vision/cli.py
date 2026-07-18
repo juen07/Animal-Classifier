@@ -15,10 +15,13 @@ Subcomandos disponibles:
 from __future__ import annotations
 
 import argparse
+import logging
 from dataclasses import replace
-from pathlib import Path
 
 from . import config, database
+from .logging_config import setup_logging
+
+logger = logging.getLogger(__name__)
 
 
 def _build_cfg(args: argparse.Namespace) -> config.PipelineConfig:
@@ -225,7 +228,20 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
-    args.func(args)
+
+    # Inicializa la bitacora de auditoria antes de ejecutar cualquier comando.
+    config.ensure_dirs()
+    setup_logging()
+    logger.info("Ejecutando comando '%s'", args.command)
+
+    try:
+        args.func(args)
+    except Exception as exc:  # noqa: BLE001 - se registra y se re-lanza
+        logger.error("El comando '%s' fallo: %s", args.command, exc, exc_info=True)
+        logger.info("Comando '%s' finalizado con errores", args.command)
+        raise
+    else:
+        logger.info("Comando '%s' finalizado correctamente", args.command)
 
 
 if __name__ == "__main__":

@@ -11,12 +11,15 @@ NO sustituye al scraper real; es unicamente una ayuda para la demostracion.
 from __future__ import annotations
 
 import hashlib
+import logging
 import random
 from pathlib import Path
 
 from PIL import Image, ImageDraw
 
 from . import config
+
+logger = logging.getLogger(__name__)
 
 
 def _color_for(key: str) -> tuple[int, int, int]:
@@ -80,6 +83,10 @@ def generate(
 
     total = sum(summary.values())
     print(f"[sample] Generadas {total} imagenes sinteticas en {raw_dir}")
+    logger.info(
+        "Generadas %d imagenes sinteticas (%d por especie) en '%s'",
+        total, per_species, raw_dir,
+    )
     return summary
 
 
@@ -114,4 +121,7 @@ def make_scene(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, quality=92)
     print(f"[sample] Escena multiobjeto guardada en {out_path}")
+    logger.info(
+        "Escena multiobjeto (%d especies) guardada en '%s'", len(species_keys), out_path
+    )
     return out_path

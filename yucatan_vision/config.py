@@ -31,6 +31,9 @@ MODELS_DIR: Path = ROOT_DIR / "models"
 RUNS_DIR: Path = ROOT_DIR / "runs"
 OUTPUTS_DIR: Path = ROOT_DIR / "outputs"
 
+# Carpeta de bitacoras de auditoria generadas por el modulo logging.
+LOGS_DIR: Path = ROOT_DIR / "logs"
+
 # Modelo base preentrenado usado como punto de partida del fine-tuning
 # y para el auto-etiquetado del dataset.
 BASE_MODEL: str = "yolov8n.pt"
@@ -168,5 +171,6 @@ def ensure_dirs() -> None:
         MODELS_DIR,
         RUNS_DIR,
         OUTPUTS_DIR,
+        LOGS_DIR,
     ):
         path.mkdir(parents=True, exist_ok=True)
